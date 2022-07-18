@@ -1,61 +1,48 @@
-import { IEngine, System } from '@gamerig/core';
-import { Renderer, RendererEvent, WebGLRenderer } from '@gamerig/threejs';
+import { Engine, System } from '@gamerig/core';
+import { Renderer, RendererEvent } from '@gamerig/threejs';
+import { Event } from 'three';
 
-import { RENDERER_PROVIDER_KEY } from '../constants';
-import { RenderingModuleOptions } from '../RenderingModuleOptions';
+export class RenderingSystem implements System {
+  private engine: Engine;
 
-export class RenderingSystem extends System {
-  private _engine: IEngine;
+  constructor(readonly renderer: Renderer) {}
 
-  private _renderer: Renderer;
+  init(engine: Engine): void {
+    this.engine = engine;
 
-  constructor(private readonly _options: RenderingModuleOptions) {
-    super();
+    this.renderer.addEventListener(RendererEvent.CanvasResized, this._onCanvasResized);
+    this.renderer.addEventListener(RendererEvent.AspectChanged, this._onAspectChanged);
+    this.renderer.addEventListener(RendererEvent.ResolutionChanged, this._onResolutionChanged);
   }
 
-  init(engine: IEngine): void {
-    this._engine = engine;
-
-    this._renderer = new WebGLRenderer(this._options.renderer);
-
-    this._renderer.addEventListener(RendererEvent.CanvasResized, this._onCanvasResized);
-    this._renderer.addEventListener(RendererEvent.AspectChanged, this._onAspectChanged);
-    this._renderer.addEventListener(RendererEvent.ResolutionChanged, this._onResolutionChanged);
-
-    engine.addProvider({
-      key: RENDERER_PROVIDER_KEY,
-      useValue: this._renderer,
-    });
-  }
-
-  private _onCanvasResized = (...args: any[]): void => {
-    this._engine.messaging.publish(RendererEvent.CanvasResized, ...args);
+  private _onCanvasResized = (e: Event): void => {
+    this.engine.messaging.publish(e.type, e.target, e.data.width, e.data.height);
   };
 
-  private _onAspectChanged = (...args: any[]): void => {
-    this._engine.messaging.publish(RendererEvent.AspectChanged, ...args);
+  private _onAspectChanged = (e: Event): void => {
+    this.engine.messaging.publish(e.type, e.target, e.data.aspect);
   };
 
-  private _onResolutionChanged = (...args: any[]): void => {
-    this._engine.messaging.publish(RendererEvent.ResolutionChanged, ...args);
+  private _onResolutionChanged = (e: Event): void => {
+    this.engine.messaging.publish(e.type, e.target, e.data.width, e.data.height);
   };
 
   update(): void {
-    this._renderer.update?.();
+    this.renderer.update?.();
   }
 
   render(): void {
-    if (this._renderer.autoClear) {
-      this._renderer.clear();
+    if (this.renderer.autoClear) {
+      this.renderer.clear();
     }
   }
 
   destroy(): void {
-    this._renderer.removeEventListener(RendererEvent.CanvasResized, this._onCanvasResized);
-    this._renderer.removeEventListener(RendererEvent.AspectChanged, this._onAspectChanged);
-    this._renderer.removeEventListener(RendererEvent.ResolutionChanged, this._onResolutionChanged);
+    this.renderer.removeEventListener(RendererEvent.CanvasResized, this._onCanvasResized);
+    this.renderer.removeEventListener(RendererEvent.AspectChanged, this._onAspectChanged);
+    this.renderer.removeEventListener(RendererEvent.ResolutionChanged, this._onResolutionChanged);
 
-    this._renderer.clear();
-    this._renderer.dispose();
+    this.renderer.clear();
+    this.renderer.dispose();
   }
 }

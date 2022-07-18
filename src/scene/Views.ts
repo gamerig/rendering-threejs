@@ -3,8 +3,8 @@ import { Renderer } from '@gamerig/threejs';
 import { View } from './View';
 
 export class Views {
-  _main: View;
-  _list: View[] = [];
+  private _main: View;
+  private _list: View[] = [];
 
   sortViews = true;
 

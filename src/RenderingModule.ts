@@ -1,27 +1,30 @@
-import { IEngine, Module, SystemPriority } from '@gamerig/core';
+import { Engine, Module, SystemPriority } from '@gamerig/core';
+import { WebGLRenderer } from '@gamerig/threejs';
 
-import { RENDERING_MODULE_OPTIONS_KEY } from './constants';
+import { RENDERER_PROVIDER } from './constants';
 import { RenderingModuleOptions } from './RenderingModuleOptions';
-import { ScenePlugin } from './scene/ScenePlugin';
+import { ScenePlugin } from './scene';
 import { RenderingSystem } from './system/RenderingSystem';
 
 export class RenderingModule implements Module {
-  private _renderingSystem: RenderingSystem;
-  private _scenePlugin: ScenePlugin;
+  private renderingSystem: RenderingSystem;
+  private scenePlugin: ScenePlugin;
 
-  private _options: RenderingModuleOptions;
+  constructor(readonly options: RenderingModuleOptions) {}
 
-  init(engine: IEngine): void {
-    this._options = engine.settings[RENDERING_MODULE_OPTIONS_KEY];
+  init(engine: Engine): void {
+    const renderer = new WebGLRenderer(this.options.renderer);
+    engine.registerProvider({ key: RENDERER_PROVIDER, useValue: renderer });
 
-    this._renderingSystem = new RenderingSystem(this._options);
-    engine.addSystem(this._renderingSystem, SystemPriority.HIGH);
+    this.renderingSystem = new RenderingSystem(renderer);
 
-    this._scenePlugin = new ScenePlugin(engine);
+    Engine.registerSystem(this.renderingSystem, { priority: SystemPriority.HIGH });
+
+    this.scenePlugin = new ScenePlugin(engine, renderer);
   }
 
   destroy(): void {
-    this._renderingSystem.destroy();
-    this._scenePlugin.dispose();
+    this.renderingSystem.destroy();
+    this.scenePlugin.dispose();
   }
 }
