@@ -35,7 +35,8 @@
   },
   "homepage": "https://github.com/gamerig/rendering-threejs#readme",
   "peerDependencies": {
-    "@gamerig/core": "^0.0.4"
+    "@gamerig/core": "^0.0.4",
+    "@gamerig/resource-loader": "^0.0.1"
   },
   "dependencies": {
     "@gamerig/threejs": "^0.0.1"
@@ -43,6 +44,7 @@
   "devDependencies": {
     "@gamerig/core": "^0.0.4",
     "@gamerig/threejs": "^0.0.1",
+    "@gamerig/resource-loader": "^0.0.1",
     "@rollup/plugin-commonjs": "^21.0.2",
     "@rollup/plugin-node-resolve": "^13.1.3",
     "@rollup/plugin-typescript": "^8.3.1",
